@@ -8,6 +8,7 @@ router.get("/", async (req, res) => {
     const users = await Users.findAll();
     res.status(200).json({ success: true, users });
   } catch (error) {
+    console.error(error)
     res.status(500).json({ success: false, message: error?.message });
   }
 });
@@ -17,6 +18,7 @@ router.post("/", async (req, res) => {
     const user = await Users.create(req.body);
     res.status(201).json({ success: true, user });
   } catch (error) {
+    console.error(error)
     res.status(500).json({ success: false, message: error?.message });
   }
 });
@@ -32,6 +34,7 @@ router.put("/:id", async (req, res) => {
     await user.save();
     res.status(200).json({ success: true, user });
   } catch (error) {
+    console.error(error)
     res.status(500).json({ success: false, message: error?.message });
   }
 });
@@ -46,6 +49,7 @@ router.delete("/:id", async (req, res) => {
     await user.destroy();
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error(error)
     res.status(500).json({ success: false, message: error?.message });
   }
 });

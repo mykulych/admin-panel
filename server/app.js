@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const morgan = require("morgan");
 const router = require("./routes");
 const app = express();
 const sequelize = require("./db");
@@ -7,6 +8,7 @@ const sequelize = require("./db");
 const PORT = 8080;
 
 app.use(express.json());
+app.use(morgan(':method :url :status :response-time'))
 app.use("/api", router);
 
 sequelize
