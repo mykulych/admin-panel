@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
+const fs = require("fs/promises")
+const path = require("path")
 const { models } = require("../db");
 const { Users } = models;
+
+const folderPath = path.join(__dirname, "../", "data", "users")
 
 router.get("/", async (req, res) => {
   try {
@@ -16,6 +20,9 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const user = await Users.create(req.body);
+    await fs.mkdir(folderPath, { recursive: true });
+    await fs.writeFile(path.join(folderPath, `${user.id}.json`), JSON.stringify(user))
+
     res.status(201).json({ success: true, user });
   } catch (error) {
     console.error(error)
@@ -29,9 +36,10 @@ router.put("/:id", async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User does not exists!" });
     }
-
     user.update(req.body);
     await user.save();
+    await fs.writeFile(path.join(folderPath, `${user.id}.json`), JSON.stringify(user))
+
     res.status(200).json({ success: true, user });
   } catch (error) {
     console.error(error)
@@ -45,8 +53,9 @@ router.delete("/:id", async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User does not exists!" });
     }
-
+    await fs.unlink(path.join(folderPath, `${user.id}.json`))
     await user.destroy();
+
     res.status(200).json({ success: true });
   } catch (error) {
     console.error(error)
