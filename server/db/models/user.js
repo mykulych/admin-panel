@@ -32,7 +32,7 @@ module.exports = (sequelize) =>
       },
       weight: {
         allowNull: false,
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
       },
     },
     {
