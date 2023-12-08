@@ -14,7 +14,7 @@ function Header() {
       }}
     >
       <Typography variant="h3" sx={{ color: "#fff" }}>
-        Formula
+        Admin panel
       </Typography>
     </Box>
   );

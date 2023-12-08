@@ -12,8 +12,8 @@ function Footer() {
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <Typography variant="h5">Formula</Typography>
-        <Typography>@Formula 2023, All Rights Reserved</Typography>
+        <Typography variant="h5">Admin panel</Typography>
+        <Typography>@Admin 2023, All Rights Reserved</Typography>
       </Box>
       <Typography>info@formula.com</Typography>
     </Box>

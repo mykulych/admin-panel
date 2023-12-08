@@ -1,11 +1,12 @@
 import {
-  ArticlesTable,
+  Table,
   Error,
   NoResults,
   SearchField,
   SelectField,
+  UserModal,
 } from "../components";
-import { useGetArticlesQuery } from "../store/api";
+import { useGetUsersQuery } from "../store/api";
 import { useState } from "react";
 import { countriesConstants, categoriesConstants } from "../utils/";
 import Box from "@mui/material/Box";
@@ -13,37 +14,38 @@ import debounce from "debounce";
 import { Button, TablePagination, Typography } from "@mui/material";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
-const DEFAULT_SEARCH = "Sport"
-
 function HomeContainer() {
-  const [values, setValues] = useState({
-    search: DEFAULT_SEARCH,
-  });
   const [paginationState, setPaginationState] = useState({
     page: 0,
     pageSize: 10,
   });
-  const { data, isFetching, error } = useGetArticlesQuery({
-    ...values,
+  const [modalState, setModalState] = useState({
+    open: false,
+    modalTitle: "",
+    data: {},
+    onSubmit: () => {},
+  });
+  const { data, isFetching, error } = useGetUsersQuery({
     ...paginationState,
-    search: values?.search || DEFAULT_SEARCH,
     page: paginationState.page + 1,
   });
-  const [showFilters, setShowFilters] = useState(false);
 
-  function onChange(event) {
-    setValues((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
+  function handleCreate(data) {
+    console.log("create data: ", data);
   }
 
-  function handleShowFilters() {
-    if (showFilters) {
-      setValues((prev) => ({ search: prev.search }));
-    }
+  function handleEdit(data) {
+    console.log("edit data: ", data)
+  }
 
-    setShowFilters((prev) => !prev);
+  function handleRemove() {}
+
+  function handleModalOpen(payload) {
+    setModalState((prev) => ({ ...prev, data: {}, ...payload, open: true }));
+  }
+
+  function handleModalClose() {
+    setModalState((prev) => ({ ...prev, open: false }));
   }
 
   function handleChangePage(event, newPage) {
@@ -64,66 +66,58 @@ function HomeContainer() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4">Formula Top Headlines</Typography>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <SearchField
-            id="search"
-            label="Search article"
-            onChange={debounce(onChange, 500)}
-          />
+    <>
+      <UserModal {...modalState} handleClose={handleModalClose} />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h4">Users table</Typography>
           <Button
-            startIcon={<FilterAltIcon />}
             variant="contained"
-            onClick={handleShowFilters}
+            sx={{
+              fontSize: "16px",
+            }}
+            onClick={() =>
+              handleModalOpen({
+                open: true,
+                modalTitle: "Create user",
+                onSubmit: handleCreate,
+              })
+            }
           >
-            Filters
+            Create user
           </Button>
         </Box>
-      </Box>
-      {showFilters ? (
-        <Box sx={{ display: "flex", gap: 3, width: "50%" }}>
-          <SelectField
-            id="country"
-            value={values.country}
-            label="Country"
-            onChange={onChange}
-            options={countriesConstants}
-          />
-          <SelectField
-            id="category"
-            value={values.category}
-            label="Category"
-            onChange={onChange}
-            options={categoriesConstants}
-          />
-        </Box>
-      ) : null}
-      {data?.articles?.length !== 0 ? (
-        <>
-          <ArticlesTable rows={data?.articles} isLoading={isFetching} />
-          {!isFetching ? (
-            <TablePagination
-              component="div"
-              count={data?.totalResults}
-              page={paginationState.page}
-              onPageChange={handleChangePage}
-              rowsPerPage={paginationState.pageSize}
-              onRowsPerPageChange={handleChangeRowsPerPage}
+        {data?.users?.length !== 0 ? (
+          <>
+            <Table
+              rows={data?.users}
+              isLoading={isFetching}
+              handleModalOpen={(payload) =>
+                handleModalOpen({ ...payload, onSubmit: handleEdit })
+              }
             />
-          ) : null}
-        </>
-      ) : (
-        <NoResults content="No results found!" />
-      )}
-    </Box>
+            {!isFetching ? (
+              <TablePagination
+                component="div"
+                count={data?.totalResults}
+                page={paginationState.page}
+                onPageChange={handleChangePage}
+                rowsPerPage={paginationState.pageSize}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            ) : null}
+          </>
+        ) : (
+          <NoResults content="No results found!" />
+        )}
+      </Box>
+    </>
   );
 }
 
