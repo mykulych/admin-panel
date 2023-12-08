@@ -2,12 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const router = require("./routes");
+const cors = require("cors")
 const app = express();
 const sequelize = require("./db");
 
 const PORT = 8080;
 
 app.use(express.json());
+app.use(cors())
 app.use(morgan(":method :url :status :response-time"));
 app.use("/api", router);
 
