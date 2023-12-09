@@ -12,8 +12,15 @@ const folderPath = path.join(__dirname, "../", "data", "users");
 
 router.get("/", async (req, res) => {
   try {
-    const users = await Users.findAll();
-    res.status(200).json({ success: true, users });
+    const { page, pageSize } = req.query;
+    const offset = page * pageSize || 0;
+    const limit = +pageSize || 10;
+
+    const users = await Users.findAndCountAll({
+      limit,
+      offset,
+    });
+    res.status(200).json({ success: true, users: users.rows, totalResults: users.count });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error?.message });

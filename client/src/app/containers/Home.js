@@ -27,7 +27,7 @@ function HomeContainer() {
   });
   const { data, isLoading, error } = useGetUsersQuery({
     ...paginationState,
-    page: paginationState.page + 1,
+    page: paginationState.page,
   });
   const [createUser, { isLoading: isCreateLoading }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserMutation();
