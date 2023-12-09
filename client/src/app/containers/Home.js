@@ -1,49 +1,72 @@
+import { Table, Error, NoResults, UserModal } from "../components";
 import {
-  ArticlesTable,
-  Error,
-  NoResults,
-  SearchField,
-  SelectField,
-} from "../components";
-import { useGetArticlesQuery } from "../store/api";
+  useCreateUserMutation,
+  useGetUsersQuery,
+  useRemoveUserMutation,
+  useUpdateUserMutation,
+} from "../store/api";
 import { useState } from "react";
-import { countriesConstants, categoriesConstants } from "../utils/";
 import Box from "@mui/material/Box";
-import debounce from "debounce";
 import { Button, TablePagination, Typography } from "@mui/material";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-
-const DEFAULT_SEARCH = "Sport"
+import { toast } from "react-toastify";
 
 function HomeContainer() {
-  const [values, setValues] = useState({
-    search: DEFAULT_SEARCH,
-  });
   const [paginationState, setPaginationState] = useState({
     page: 0,
     pageSize: 10,
   });
-  const { data, isFetching, error } = useGetArticlesQuery({
-    ...values,
-    ...paginationState,
-    search: values?.search || DEFAULT_SEARCH,
-    page: paginationState.page + 1,
+  const [modalState, setModalState] = useState({
+    open: false,
+    modalTitle: "",
+    data: {},
+    onSubmit: () => {},
   });
-  const [showFilters, setShowFilters] = useState(false);
+  const { data, isLoading, error } = useGetUsersQuery({
+    ...paginationState,
+    page: paginationState.page,
+  });
+  const [createUser, { isLoading: isCreateLoading }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserMutation();
+  const [removeUser] = useRemoveUserMutation();
 
-  function onChange(event) {
-    setValues((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
+  async function handleCreate(data) {
+    try {
+      await createUser(data).unwrap();
+      handleModalClose();
+      toast("Created successfully!", { type: "success" });
+    } catch (error) {
+      toast(error?.data?.message, { type: "error" });
+      handleModalClose();
+    }
   }
 
-  function handleShowFilters() {
-    if (showFilters) {
-      setValues((prev) => ({ search: prev.search }));
+  async function handleEdit(data) {
+    try {
+      await updateUser(data).unwrap();
+      handleModalClose();
+      toast("Updated successfully!", { type: "success" });
+    } catch (error) {
+      toast(error?.data?.message, { type: "error" });
+      handleModalClose();
     }
+  }
 
-    setShowFilters((prev) => !prev);
+  async function handleRemove(userId) {
+    try {
+      await removeUser(userId).unwrap();
+      toast("Removed successfully!", { type: "success" });
+    } catch (error) {
+      toast(error?.data?.message, { type: "error" });
+      console.error(error);
+    }
+  }
+
+  function handleModalOpen(payload) {
+    setModalState((prev) => ({ ...prev, data: {}, ...payload, open: true }));
+  }
+
+  function handleModalClose() {
+    setModalState((prev) => ({ ...prev, open: false }));
   }
 
   function handleChangePage(event, newPage) {
@@ -64,66 +87,63 @@ function HomeContainer() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4">Formula Top Headlines</Typography>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <SearchField
-            id="search"
-            label="Search article"
-            onChange={debounce(onChange, 500)}
-          />
+    <>
+      <UserModal
+        {...modalState}
+        handleClose={handleModalClose}
+        isLoading={isCreateLoading || isUpdateLoading}
+      />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h4">Users table</Typography>
           <Button
-            startIcon={<FilterAltIcon />}
             variant="contained"
-            onClick={handleShowFilters}
+            sx={{
+              fontSize: "16px",
+            }}
+            onClick={() =>
+              handleModalOpen({
+                open: true,
+                modalTitle: "Create user",
+                onSubmit: handleCreate,
+              })
+            }
           >
-            Filters
+            Create user
           </Button>
         </Box>
-      </Box>
-      {showFilters ? (
-        <Box sx={{ display: "flex", gap: 3, width: "50%" }}>
-          <SelectField
-            id="country"
-            value={values.country}
-            label="Country"
-            onChange={onChange}
-            options={countriesConstants}
-          />
-          <SelectField
-            id="category"
-            value={values.category}
-            label="Category"
-            onChange={onChange}
-            options={categoriesConstants}
-          />
-        </Box>
-      ) : null}
-      {data?.articles?.length !== 0 ? (
-        <>
-          <ArticlesTable rows={data?.articles} isLoading={isFetching} />
-          {!isFetching ? (
-            <TablePagination
-              component="div"
-              count={data?.totalResults}
-              page={paginationState.page}
-              onPageChange={handleChangePage}
-              rowsPerPage={paginationState.pageSize}
-              onRowsPerPageChange={handleChangeRowsPerPage}
+        {data?.users?.length !== 0 ? (
+          <>
+            <Table
+              rows={data?.users}
+              isLoading={isLoading}
+              handleModalOpen={(payload) =>
+                handleModalOpen({ ...payload, onSubmit: handleEdit })
+              }
+              handleRemove={handleRemove}
             />
-          ) : null}
-        </>
-      ) : (
-        <NoResults content="No results found!" />
-      )}
-    </Box>
+            {!isLoading ? (
+              <TablePagination
+                component="div"
+                count={data?.totalResults}
+                page={paginationState.page}
+                onPageChange={handleChangePage}
+                rowsPerPage={paginationState.pageSize}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            ) : null}
+          </>
+        ) : (
+          <NoResults content="No results found!" />
+        )}
+      </Box>
+    </>
   );
 }
 

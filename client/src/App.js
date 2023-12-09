@@ -1,20 +1,17 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Home from "./app/pages/Home";
-import Article from "./app/pages/Article";
 import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { Layout } from "./app/components";
+import { ToastContainer } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 const router = createBrowserRouter([
   {
-    id: "articles",
+    id: "home",
     path: "/",
     Component: Home,
-  },
-  {
-    id: "article",
-    path: "/:articleTitle",
-    Component: () => <Article />,
   },
 ]);
 
@@ -26,6 +23,7 @@ function App() {
           <RouterProvider router={router} />
         </Layout>
       </Provider>
+      <ToastContainer theme="dark" />
     </div>
   );
 }

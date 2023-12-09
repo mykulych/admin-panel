@@ -1,25 +1,50 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const newsApi = createApi({
+export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_NEWS_API_URL,
+    baseUrl: process.env.REACT_APP_API_URL,
   }),
   endpoints: (build) => ({
-    getArticles: build.query({
-      query: ({search, country, category, page, pageSize}) => ({
-        url: "top-headlines",
+    getUsers: build.query({
+      query: ({ page, pageSize }) => ({
+        url: "users",
         params: {
-          apiKey: process.env.REACT_APP_NEWS_API_KEY,
-          q: search,
-          country,
-          category,
           page,
-          pageSize
+          pageSize,
         },
       }),
+      providesTags: ["Users"],
+    }),
+    createUser: build.mutation({
+      query: (payload) => ({
+        url: "users",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    updateUser: build.mutation({
+      query: ({ id, ...payload }) => ({
+        url: "users/" + id,
+        method: "PUT",
+        body: payload,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    removeUser: build.mutation({
+      query: (userId) => ({
+        url: "users/" + userId,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Users"],
     }),
   }),
 });
 
-export const { useGetArticlesQuery } = newsApi;
+export const {
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useRemoveUserMutation,
+} = api;
