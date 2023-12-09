@@ -1,9 +1,4 @@
-import {
-  Table,
-  Error,
-  NoResults,
-  UserModal,
-} from "../components";
+import { Table, Error, NoResults, UserModal } from "../components";
 import {
   useCreateUserMutation,
   useGetUsersQuery,
@@ -13,6 +8,7 @@ import {
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import { Button, TablePagination, Typography } from "@mui/material";
+import { toast } from "react-toastify";
 
 function HomeContainer() {
   const [paginationState, setPaginationState] = useState({
@@ -37,8 +33,9 @@ function HomeContainer() {
     try {
       await createUser(data).unwrap();
       handleModalClose();
+      toast("Created successfully!", { type: "success" });
     } catch (error) {
-      console.log(error);
+      toast(error?.data?.message, { type: "error" });
       handleModalClose();
     }
   }
@@ -47,8 +44,9 @@ function HomeContainer() {
     try {
       await updateUser(data).unwrap();
       handleModalClose();
+      toast("Updated successfully!", { type: "success" });
     } catch (error) {
-      console.error(error);
+      toast(error?.data?.message, { type: "error" });
       handleModalClose();
     }
   }
@@ -56,7 +54,9 @@ function HomeContainer() {
   async function handleRemove(userId) {
     try {
       await removeUser(userId).unwrap();
+      toast("Removed successfully!", { type: "success" });
     } catch (error) {
+      toast(error?.data?.message, { type: "error" });
       console.error(error);
     }
   }
