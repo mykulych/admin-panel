@@ -4,7 +4,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const { models } = require("../db");
 const { Users } = models;
-const {createUserDto, updateUserDto} = require("../dto/user.dto");
+const { createUserDto, updateUserDto } = require("../dto/user.dto");
 const Ajv = require("ajv");
 
 const ajv = new Ajv();
@@ -22,12 +22,14 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const body = req.body
-    const validate = ajv.compile(createUserDto)
-    const valid = validate(body)
+    const body = req.body;
+    const validate = ajv.compile(createUserDto);
+    const valid = validate(body);
     if (!valid) {
-      console.log(validate.errors)
-      return res.status(400).json({success: false, message: "Validation error"})
+      console.log(validate.errors);
+      return res
+        .status(400)
+        .json({ success: false, message: "Validation error" });
     }
 
     const user = await Users.create(body);
@@ -46,14 +48,16 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const body = req.body
-    const validate = ajv.compile(updateUserDto)
-    const valid = validate(body)
+    const body = req.body;
+    const validate = ajv.compile(updateUserDto);
+    const valid = validate(body);
     if (!valid) {
-      console.log(validate.errors)
-      return res.status(400).json({success: false, message: "Validation error"})
+      console.log(validate.errors);
+      return res
+        .status(400)
+        .json({ success: false, message: "Validation error" });
     }
-    
+
     const user = await Users.findOne({ where: { id: req.params.id } });
     if (!user) {
       return res
@@ -82,7 +86,10 @@ router.delete("/:id", async (req, res) => {
         .status(404)
         .json({ success: false, message: "User does not exists!" });
     }
-    await fs.unlink(path.join(folderPath, `${user.id}.json`));
+    const filePath = path.join(folderPath, `${user.id}.json`);
+    if (require("fs").existsSync(filePath)) {
+      await fs.unlink(filePath);
+    }
     await user.destroy();
 
     res.status(200).json({ success: true });

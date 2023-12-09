@@ -3,6 +3,9 @@ import { TextField } from "../Forms/TextField";
 import { useForm } from "react-hook-form";
 import CloseIcon from "@mui/icons-material/Close";
 import { useEffect } from "react";
+import LoadingButton from "@mui/lab/LoadingButton";
+import { SelectField } from "../Forms/SelectField";
+import { countriesConstants } from "../../utils/countries.constants";
 
 const style = {
   position: "absolute",
@@ -16,8 +19,8 @@ const style = {
   p: 4,
 };
 
-function UserModal({ open, modalTitle, data, onSubmit, handleClose }) {
-  const { register, setValue, reset, handleSubmit } = useForm();
+function UserModal({ open, modalTitle, data, onSubmit, handleClose, isLoading }) {
+  const { register, setValue, control, reset, handleSubmit } = useForm();
 
   useEffect(() => {
     if (Object.keys(data).length) {
@@ -65,25 +68,28 @@ function UserModal({ open, modalTitle, data, onSubmit, handleClose }) {
               label="Phone number"
               validationOpt={{ required: true }}
             />
-            <TextField
+            {/* <TextField
               id="country"
               register={register}
               label="Country"
               validationOpt={{ required: true }}
-            />
+            /> */}
+            <SelectField id="country" label="Country" control={control} options={countriesConstants} />
             <TextField
               id="height"
               register={register}
               label="Height"
               validationOpt={{ required: true }}
+              type="number"
             />
             <TextField
               id="weight"
               register={register}
               label="Weight"
               validationOpt={{ required: true }}
+              type="number"
             />
-            <Button type="submit">Submit</Button>
+            <LoadingButton loading={isLoading} type="submit">Submit</LoadingButton>
           </Box>
         </form>
       </Box>

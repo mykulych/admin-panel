@@ -2,17 +2,17 @@ import {
   Table,
   Error,
   NoResults,
-  SearchField,
-  SelectField,
   UserModal,
 } from "../components";
-import { useGetUsersQuery } from "../store/api";
+import {
+  useCreateUserMutation,
+  useGetUsersQuery,
+  useRemoveUserMutation,
+  useUpdateUserMutation,
+} from "../store/api";
 import { useState } from "react";
-import { countriesConstants, categoriesConstants } from "../utils/";
 import Box from "@mui/material/Box";
-import debounce from "debounce";
 import { Button, TablePagination, Typography } from "@mui/material";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 function HomeContainer() {
   const [paginationState, setPaginationState] = useState({
@@ -25,20 +25,41 @@ function HomeContainer() {
     data: {},
     onSubmit: () => {},
   });
-  const { data, isFetching, error } = useGetUsersQuery({
+  const { data, isLoading, error } = useGetUsersQuery({
     ...paginationState,
     page: paginationState.page + 1,
   });
+  const [createUser, { isLoading: isCreateLoading }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserMutation();
+  const [removeUser] = useRemoveUserMutation();
 
-  function handleCreate(data) {
-    console.log("create data: ", data);
+  async function handleCreate(data) {
+    try {
+      await createUser(data).unwrap();
+      handleModalClose();
+    } catch (error) {
+      console.log(error);
+      handleModalClose();
+    }
   }
 
-  function handleEdit(data) {
-    console.log("edit data: ", data)
+  async function handleEdit(data) {
+    try {
+      await updateUser(data).unwrap();
+      handleModalClose();
+    } catch (error) {
+      console.error(error);
+      handleModalClose();
+    }
   }
 
-  function handleRemove() {}
+  async function handleRemove(userId) {
+    try {
+      await removeUser(userId).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   function handleModalOpen(payload) {
     setModalState((prev) => ({ ...prev, data: {}, ...payload, open: true }));
@@ -67,7 +88,11 @@ function HomeContainer() {
 
   return (
     <>
-      <UserModal {...modalState} handleClose={handleModalClose} />
+      <UserModal
+        {...modalState}
+        handleClose={handleModalClose}
+        isLoading={isCreateLoading || isUpdateLoading}
+      />
       <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <Box
           sx={{
@@ -97,12 +122,13 @@ function HomeContainer() {
           <>
             <Table
               rows={data?.users}
-              isLoading={isFetching}
+              isLoading={isLoading}
               handleModalOpen={(payload) =>
                 handleModalOpen({ ...payload, onSubmit: handleEdit })
               }
+              handleRemove={handleRemove}
             />
-            {!isFetching ? (
+            {!isLoading ? (
               <TablePagination
                 component="div"
                 count={data?.totalResults}

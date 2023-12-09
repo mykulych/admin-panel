@@ -1,7 +1,6 @@
 export * from "./Table/Table";
 export * from "./Layout/Layout";
 export * from "./Forms/TextField";
-export * from "./Forms/SearchField";
 export * from "./Forms/SelectField";
 export * from "./Spinner";
 export * from "./NoResults";
