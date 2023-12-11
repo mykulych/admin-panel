@@ -20,7 +20,7 @@ sequelize
     app.listen(PORT, () => {
       console.log(`Server has been started on port ${PORT}... `);
     });
-    console.log("Connection has been established successfully.");
+    console.log("Connection has been established successfully!");
     return;
   })
   .catch((err) => console.log("Unable to connect to the database:", err));
