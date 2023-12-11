@@ -1,21 +1,19 @@
 const { Sequelize } = require("sequelize");
 
-const sequelize = new Sequelize(
-  process.env.DATABASE,
-  process.env.DATABASE_USER,
-  process.env.PASSWORD,
-  {
-    host: process.env.DATABASE_HOST,
-    port: process.env.DATABASE_PORT,
-    dialect: process.env.DIALECT,
-    logging: false,
-
-    pool: {
-      max: 80,
-      min: 0,
-    },
+const sequelize = new Sequelize({
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  database: process.env.POSTGRES_DATABASE,
+  dialect: "postgres",
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  dialectOptions: {
+    encrypt: true,
+    ssl : {
+      rejectUnauthorized: true
+    }
   },
-);
+})
 
 require("./models").init(sequelize);
 
